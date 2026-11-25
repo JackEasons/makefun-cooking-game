@@ -126,7 +126,10 @@ export class Game {
     }
 
     // --- chef -------------------------------------------------------------
-    if (this.input.moveTarget) this.chef.moveTarget = this.input.moveTarget;
+    if (this.input.moveTarget) {
+      this.chef.moveTarget = this.input.moveTarget;
+      this.input.moveTarget = null; // consumed: the chef keeps its own copy
+    }
     this.chef.update(dt, this.input);
     if (this.input.clickedStation) {
       const near = this.chef.nearestStation();
