@@ -7,8 +7,9 @@
 **Golden Ladle** — a tiny bistro, a big lunch rush. You are the only chef in a
 warm little kitchen: grab ingredients from the crates, chop veg on the board,
 grill patties on the stove (don't burn them), build each dish on a plate at
-the counter, and serve it at the window before its ticket runs out. Four
-recipes (Classic Burger, Cheesy Melt, Garden Salad, Veggie Stack), a 150-second
+the counter, and serve it at the window before its ticket runs out. Six
+recipes (Classic Burger, Cheesy Melt, Garden Salad, Veggie Stack, Golden
+Deluxe, Crunch Burger), a 150-second
 dinner shift, tips for fast serves, combos for chained serves, and three
 walk-outs ends the shift.
 

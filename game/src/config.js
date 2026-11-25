@@ -83,8 +83,22 @@ export const RECIPES = {
     base: 130,
     color: '#d94f3d',
   },
+  deluxe: {
+    name: 'Golden Deluxe',
+    short: 'Deluxe',
+    needs: ['bun', 'patty', 'cheese', 'lettuceChopped', 'tomatoChopped'],
+    base: 160,
+    color: '#f2b234',
+  },
+  crunch: {
+    name: 'Crunch Burger',
+    short: 'Crunch',
+    needs: ['bun', 'patty', 'onionChopped', 'lettuce'],
+    base: 140,
+    color: '#c98d5f',
+  },
 };
-export const RECIPE_IDS = ['burger', 'melt', 'salad', 'stack'];
+export const RECIPE_IDS = ['burger', 'melt', 'salad', 'stack', 'deluxe', 'crunch'];
 
 // Station rectangles (x, y, w, h) on the 1280x720 floor. The top strip is the
 // order board; the kitchen floor starts below it.

@@ -40,10 +40,10 @@ export function stageShot(game, name) {
     setTicket(game, 2, 'salad', 30, 48);
     setTicket(game, 3, 'melt', 6, 55);
     game.kitchen.stoves[0] = { item: 'patty', ms: 6000 };
-    game.kitchen.assemblyPlate = { items: ['bun', 'patty'] };
-    game.chef.x = 590; game.chef.y = 430; game.chef.dir = -1;
-    game.chef.pickItem('lettuce');
-    game.say('Burger almost there — add the lettuce!');
+    game.kitchen.assemblyPlate = { items: ['bun', 'patty', 'lettuce'] };
+    game.chef.x = 610; game.chef.y = 490; game.chef.dir = -1;
+    game.chef.pickItem('tomato');
+    game.say('Burger complete — serve it, then start the salad!');
   } else if (name === 'chop') {
     // Mid-chop: knife work on the board, ticket board and timer in frame.
     game.elapsed = 20;
@@ -53,7 +53,8 @@ export function stageShot(game, name) {
     setTicket(game, 2, 'burger', 20, 50);
     game.kitchen.startChop('tomato');
     game.kitchen.chopping.ms = 700;
-    game.chef.x = 120; game.chef.y = 430; game.chef.dir = -1;
+    game.kitchen.stoves[1] = { item: 'pattyRaw', ms: 3200 };
+    game.chef.x = 120; game.chef.y = 440; game.chef.dir = -1;
     game.say('Chopping tomato — hold E!');
   } else if (name === 'serve') {
     // A finished plate in hand at the window, ready to serve.
@@ -64,7 +65,7 @@ export function stageShot(game, name) {
     game.comboTimer = 15000;
     setTicket(game, 1, 'burger', 10, 50);
     setTicket(game, 2, 'stack', 26, 46);
-    game.chef.x = 950; game.chef.y = 430; game.chef.dir = -1;
+    game.chef.x = 960; game.chef.y = 480; game.chef.dir = -1;
     game.chef.pickPlate(['bun', 'patty', 'lettuce']);
     game.say('Classic Burger complete — serve it at the window!');
   } else {
@@ -77,12 +78,12 @@ export function stageShot(game, name) {
     setTicket(game, 1, 'salad', 42, 46);
     setTicket(game, 2, 'burger', 15, 44);
     setTicket(game, 3, 'stack', 30, 42);
-    setTicket(game, 4, 'melt', 5, 48);
+    setTicket(game, 4, 'deluxe', 5, 48);
     game.kitchen.stoves[0] = { item: 'pattyRaw', ms: 4500 };
     game.kitchen.stoves[1] = { item: 'patty', ms: 6000 };
-    game.kitchen.assemblyPlate = { items: ['lettuceChopped', 'tomatoChopped'] };
+    game.kitchen.assemblyPlate = { items: ['lettuceChopped', 'tomatoChopped', 'cheese'] };
     game.chef.x = 640; game.chef.y = 520; game.chef.dir = 1;
-    game.chef.pickItem('onionChopped');
+    game.chef.pickItem('patty');
     game.say('Rush hour! That salad ticket is about to walk out!');
   }
   // One real frame through the normal render path, then signal readiness.

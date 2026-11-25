@@ -134,6 +134,14 @@ function drawPlate(ctx, x, y, items, s) {
   layers.forEach((item, i) => {
     drawIngredient(ctx, item, 0, -6 - i * 7, s * 0.95);
   });
+  // A full-looking plate gets a garnish: parsley sprig + a gold drizzle.
+  if (layers.length >= 3) {
+    ctx.strokeStyle = '#f2b234'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, -6 - layers.length * 7 + 4, s * 0.5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    ctx.fillStyle = '#3f8f3a';
+    ctx.beginPath(); ctx.ellipse(s * 0.45, -10 - layers.length * 7, 5, 2.5, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s * 0.52, -6 - layers.length * 7, 4, 2, 0.4, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -152,6 +160,10 @@ function drawChef(ctx, chef, carrying) {
   ctx.fillStyle = '#d94f3d';
   roundRect(ctx, -13, 2 + bob, 26, 20, 6);
   ctx.fill();
+  // The golden ladle on the apron — the bistro's mark.
+  ctx.strokeStyle = '#f2b234'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 12 + bob, 3.5, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, 15.5 + bob); ctx.lineTo(0, 21 + bob); ctx.stroke();
   // Head and toque.
   ctx.fillStyle = '#f2c89b';
   ctx.beginPath(); ctx.arc(0, -18 + bob, 13, 0, Math.PI * 2); ctx.fill();
@@ -179,6 +191,10 @@ function drawChef(ctx, chef, carrying) {
 
 // --- stations --------------------------------------------------------------
 function drawStationBase(ctx, s, label, accent) {
+  // Soft drop shadow so the counter sits on the floor, not on top of it.
+  ctx.fillStyle = 'rgba(43,29,18,0.18)';
+  roundRect(ctx, s.x + 3, s.y + 10, s.w, s.h, 10);
+  ctx.fill();
   ctx.fillStyle = COLORS.counterSide;
   roundRect(ctx, s.x, s.y + 6, s.w, s.h, 10);
   ctx.fill();
@@ -243,7 +259,7 @@ export function render(ctx, game, input) {
   ctx.fillRect(0, 0, VIEW_W, 180);
   ctx.fillStyle = COLORS.wallTrim;
   ctx.fillRect(0, 172, VIEW_W, 8);
-  // Floor checker.
+  // Floor checker with grout lines, so the tiles read as tiles.
   const tile = 64;
   for (let ty = 180; ty < VIEW_H; ty += tile) {
     for (let tx = 0; tx < VIEW_W; tx += tile) {
@@ -252,16 +268,41 @@ export function render(ctx, game, input) {
       ctx.fillRect(tx, ty, tile, tile);
     }
   }
+  ctx.strokeStyle = 'rgba(120,66,32,0.35)';
+  ctx.lineWidth = 2;
+  for (let ty = 180; ty <= VIEW_H; ty += tile) {
+    ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(VIEW_W, ty); ctx.stroke();
+  }
+  for (let tx = 0; tx <= VIEW_W; tx += tile) {
+    ctx.beginPath(); ctx.moveTo(tx, 180); ctx.lineTo(tx, VIEW_H); ctx.stroke();
+  }
   // Wall decor: framed menu and hanging pans.
   text(ctx, '★ GOLDEN LADLE ★', 24, 30, 20, '#8a5a33', '800');
   text(ctx, 'bistro · est. 2026', 24, 54, 12, COLORS.inkSoft, '600');
+  // Three copper pans hanging from hooks between the title and the HUD.
+  for (let i = 0; i < 3; i++) {
+    const px = 312 + i * 30;
+    const pr = 13 - i * 2;
+    // Hook and handle run above the pan, so it reads as hanging cookware.
+    ctx.strokeStyle = '#8a5a33'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(px, 10); ctx.lineTo(px, 20); ctx.stroke();
+    ctx.fillStyle = '#8a5a33';
+    ctx.fillRect(px - 2, 18, 4, 14);
+    ctx.fillStyle = '#b4632e';
+    ctx.beginPath(); ctx.arc(px, 34 + pr, pr, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8a4a22';
+    ctx.beginPath(); ctx.arc(px, 34 + pr, pr * 0.62, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d98a4a';
+    ctx.beginPath(); ctx.arc(px - 3, 31 + pr, pr * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.fillStyle = '#fff8e6';
-  roundRect(ctx, 980, 14, 276, 52, 8);
+  roundRect(ctx, 908, 12, 348, 56, 8);
   ctx.fill();
   ctx.strokeStyle = '#d9c49a'; ctx.lineWidth = 2;
-  roundRect(ctx, 980, 14, 276, 52, 8);
+  roundRect(ctx, 908, 12, 348, 56, 8);
   ctx.stroke();
-  text(ctx, 'TODAY: burgers · melts · salads · stacks', 1118, 40, 12, COLORS.inkSoft, '700', 'center');
+  text(ctx, 'TODAY · 6 DISHES ON THE MENU', 1082, 30, 12, '#8a5a33', '800', 'center');
+  text(ctx, 'burgers · melts · salads · stacks · deluxe · crunch', 1082, 52, 12, COLORS.inkSoft, '700', 'center');
 
   // --- HUD bar ------------------------------------------------------------
   ctx.fillStyle = 'rgba(43,29,18,0.88)';
@@ -285,11 +326,26 @@ export function render(ctx, game, input) {
   text(ctx, `served ${board.served}`, 880, 30, 13, '#fff6e3', '700', 'right');
   text(ctx, 'M mute · R restart', 880, 52, 11, 'rgba(255,246,227,0.7)', '600', 'right');
 
-  // A warm rug in the middle of the floor, so the open space reads as a room.
-  ctx.fillStyle = 'rgba(217,79,61,0.16)';
-  ctx.beginPath(); ctx.ellipse(640, 545, 250, 52, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = 'rgba(217,79,61,0.35)'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.ellipse(640, 545, 250, 52, 0, 0, Math.PI * 2); ctx.stroke();
+  // A woven rug in the middle of the floor, so the open space reads as a room.
+  ctx.fillStyle = '#a83c2a';
+  roundRect(ctx, 420, 596, 440, 72, 14);
+  ctx.fill();
+  ctx.strokeStyle = '#e8b25c'; ctx.lineWidth = 3;
+  roundRect(ctx, 428, 604, 424, 56, 10);
+  ctx.stroke();
+  ctx.fillStyle = '#e8b25c';
+  for (let i = 0; i < 7; i++) {
+    const dx = 470 + i * 60;
+    ctx.save();
+    ctx.translate(dx, 632);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-7, -7, 14, 14);
+    ctx.restore();
+  }
+  ctx.fillStyle = 'rgba(232,178,92,0.7)';
+  for (const dx of [450, 830]) {
+    ctx.beginPath(); ctx.arc(dx, 632, 4, 0, Math.PI * 2); ctx.fill();
+  }
 
   // --- order board ---------------------------------------------------------
   text(ctx, 'ORDER BOARD', 24, 92, 13, COLORS.inkSoft, '800');
@@ -367,7 +423,7 @@ export function render(ctx, game, input) {
   if (kitchen.assemblyPlate) {
     drawPlate(ctx, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 48, kitchen.assemblyPlate.items, 40);
     const match = board.matchTicket(kitchen.assemblyPlate.items);
-    if (match) text(ctx, `✓ ${match.recipe.name} — ready to serve!`, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 86, 11, '#2b7a2e', '800', 'center');
+    if (match) text(ctx, `✓ ${match.recipe.name} — ready to serve!`, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 86, 11, '#ffe9a8', '800', 'center');
   } else {
     ctx.fillStyle = 'rgba(255,246,227,0.75)';
     ctx.font = '13px sans-serif';
@@ -400,6 +456,56 @@ export function render(ctx, game, input) {
       drawIngredient(ctx, k, counter.x + 40 + i * 68, counter.y + 26, 44);
     });
   }
+
+  // Customers waiting at the pass, above the serving window — the bistro's
+  // regulars. Their mood follows the most urgent ticket on the board.
+  const waiting = board.tickets.length > 0;
+  const minRemaining = board.tickets.length
+    ? Math.min(...board.tickets.map((t) => 1 - t.age / t.patience))
+    : 1;
+  const mood = minRemaining < 0.22 ? 'impatient' : waiting ? 'hungry' : 'happy';
+  const regulars = [
+    { x: 892, y: 252, skin: '#f2c89b', hair: '#3a2a1c', shirt: '#4d7ea8', bob: 0 },
+    { x: 952, y: 244, skin: '#e8b184', hair: '#6e4525', shirt: '#c65a7a', bob: 1.3 },
+    { x: 1012, y: 252, skin: '#f7d9a0', hair: '#8a8d94', shirt: '#4d9e57', bob: 2.6 },
+  ];
+  regulars.forEach((c, i) => {
+    const bounce = mood === 'impatient' && i === 0 ? Math.abs(Math.sin(game.nowMs / 240 + c.bob)) * 3 : Math.sin(game.nowMs / 500 + c.bob) * 1;
+    const cy = c.y - bounce;
+    ctx.save();
+    ctx.translate(c.x, cy);
+    ctx.fillStyle = 'rgba(43,29,18,0.22)';
+    ctx.beginPath(); ctx.ellipse(0, 26, 18, 5, 0, 0, Math.PI * 2); ctx.fill();
+    // Legs and body, facing the kitchen (we see their faces).
+    ctx.fillStyle = '#3a2a1c';
+    ctx.fillRect(-9, 12, 7, 14);
+    ctx.fillRect(2, 12, 7, 14);
+    ctx.fillStyle = c.shirt;
+    roundRect(ctx, -14, -8, 28, 22, 8);
+    ctx.fill();
+    // Head, hair, eyes and mouth.
+    ctx.fillStyle = c.skin;
+    ctx.beginPath(); ctx.arc(0, -16, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = c.hair;
+    ctx.beginPath(); ctx.arc(0, -19, 11, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-11, -19, 22, 4);
+    ctx.fillStyle = '#2b1d12';
+    ctx.beginPath(); ctx.arc(-4, -15, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -15, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#2b1d12'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (mood === 'happy') ctx.arc(0, -12, 4, 0.15 * Math.PI, 0.85 * Math.PI);
+    else if (mood === 'impatient') ctx.arc(0, -7, 4, 1.15 * Math.PI, 1.85 * Math.PI);
+    else ctx.arc(0, -11, 3, 0.2 * Math.PI, 0.8 * Math.PI); // hungry: a hopeful smile
+    ctx.stroke();
+    // The impatient one taps and frets: a sweat drop and an exclamation.
+    if (mood === 'impatient' && i === 0) {
+      ctx.fillStyle = '#7fb8d9';
+      ctx.beginPath(); ctx.arc(12, -24, 2.5, 0, Math.PI * 2); ctx.fill();
+      text(ctx, '!', 20, -30, 16, '#d94f3d', '800', 'center');
+    }
+    ctx.restore();
+  });
 
   // Steam wisps.
   for (const s of game.steam) {
@@ -451,6 +557,19 @@ export function render(ctx, game, input) {
     ctx.fill();
     text(ctx, game.message, VIEW_W / 2, VIEW_H - 25, 14, '#fff6e3', '600', 'center');
   }
+
+  // Warm kitchen light from above and a soft vignette, so the room glows
+  // instead of lying flat.
+  const glow = ctx.createRadialGradient(640, 170, 60, 640, 300, 620);
+  glow.addColorStop(0, 'rgba(255,205,130,0.12)');
+  glow.addColorStop(1, 'rgba(255,205,130,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+  const vig = ctx.createRadialGradient(640, 360, 300, 640, 360, 780);
+  vig.addColorStop(0, 'rgba(43,29,18,0)');
+  vig.addColorStop(1, 'rgba(43,29,18,0.22)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
   if (game.flash) {
     ctx.globalAlpha = Math.max(0, game.flash.life * 2);
