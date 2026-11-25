@@ -105,11 +105,13 @@ export function drawIngredient(ctx, kind, x, y, s) {
     case 'onionChopped': {
       const base = kind === 'tomatoChopped' ? '#e2483a' : kind === 'lettuceChopped' ? '#69b455' : '#efe6f7';
       ctx.fillStyle = base;
+      ctx.strokeStyle = 'rgba(43,29,18,0.35)';
+      ctx.lineWidth = 1.5;
       for (let i = -1; i <= 1; i++) {
         roundRect(ctx, i * u * 0.62 - u * 0.28, -u * 0.3, u * 0.56, u * 0.7, u * 0.14);
         ctx.fill();
+        ctx.stroke();
       }
-      ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1;
       break;
     }
     default: {
@@ -185,7 +187,8 @@ function drawStationBase(ctx, s, label, accent) {
   ctx.fill();
   ctx.fillStyle = COLORS.counterEdge;
   ctx.fillRect(s.x + 4, s.y + s.h - 12, s.w - 8, 4);
-  text(ctx, label, s.x + s.w / 2, s.y + s.h - 22, 11, 'rgba(255,246,227,0.9)', '800', 'center');
+  // Label sits at the top so icons, bars and plates below it never cover it.
+  text(ctx, label, s.x + s.w / 2, s.y + 15, 11, 'rgba(255,246,227,0.9)', '800', 'center');
   if (accent) {
     ctx.fillStyle = accent;
     ctx.fillRect(s.x + 8, s.y + 6, s.w - 16, 4);
@@ -212,16 +215,16 @@ function drawTicket(ctx, ticket, x, y, w, h, nowMs) {
   text(ctx, `#${ticket.id}`, x + w - 10, y + 18, 11, COLORS.inkSoft, '700', 'right');
   // Ingredient icons for the recipe.
   ticket.recipe.needs.forEach((item, i) => {
-    drawIngredient(ctx, item, x + 32 + i * 34, y + 48, 26);
+    drawIngredient(ctx, item, x + 32 + i * 34, y + 40, 20);
   });
   // Patience bar.
   const barW = w - 24;
   ctx.fillStyle = '#e8dcc2';
-  roundRect(ctx, x + 12, y + h - 16, barW, 8, 4);
+  roundRect(ctx, x + 12, y + h - 10, barW, 8, 4);
   ctx.fill();
   ctx.fillStyle = remaining > 0.5 ? '#4d9e57' : remaining > 0.22 ? '#f2b234' : '#d94f3d';
   if (remaining > 0) {
-    roundRect(ctx, x + 12, y + h - 16, barW * remaining, 8, 4);
+    roundRect(ctx, x + 12, y + h - 10, barW * remaining, 8, 4);
     ctx.fill();
   }
   text(ctx, `${Math.ceil(ticket.patience - ticket.age)}s`, x + w - 12, y + h - 26, 11, urgent ? '#d94f3d' : COLORS.inkSoft, '800', 'right');
@@ -282,6 +285,12 @@ export function render(ctx, game, input) {
   text(ctx, `served ${board.served}`, 880, 30, 13, '#fff6e3', '700', 'right');
   text(ctx, 'M mute · R restart', 880, 52, 11, 'rgba(255,246,227,0.7)', '600', 'right');
 
+  // A warm rug in the middle of the floor, so the open space reads as a room.
+  ctx.fillStyle = 'rgba(217,79,61,0.16)';
+  ctx.beginPath(); ctx.ellipse(640, 545, 250, 52, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(217,79,61,0.35)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(640, 545, 250, 52, 0, 0, Math.PI * 2); ctx.stroke();
+
   // --- order board ---------------------------------------------------------
   text(ctx, 'ORDER BOARD', 24, 92, 13, COLORS.inkSoft, '800');
   ctx.strokeStyle = '#d9c49a'; ctx.lineWidth = 2;
@@ -299,75 +308,86 @@ export function render(ctx, game, input) {
   // --- stations ------------------------------------------------------------
   for (const crate of STATIONS.crates) {
     drawStationBase(ctx, crate, INGREDIENTS[crate.kind].label.toUpperCase());
-    drawIngredient(ctx, crate.kind, crate.x + crate.w / 2, crate.y + 26, 40);
+    drawIngredient(ctx, crate.kind, crate.x + crate.w / 2, crate.y + 46, 38);
   }
   drawStationBase(ctx, STATIONS.board, 'CHOP · HOLD E', '#69b455');
   ctx.fillStyle = '#e8d9b8';
-  roundRect(ctx, STATIONS.board.x + 14, STATIONS.board.y + 12, STATIONS.board.w - 28, 34, 6);
+  roundRect(ctx, STATIONS.board.x + 14, STATIONS.board.y + 28, STATIONS.board.w - 28, 34, 6);
   ctx.fill();
   if (kitchen.chopping) {
     const item = kitchen.chopping.item;
-    drawIngredient(ctx, item, STATIONS.board.x + STATIONS.board.w / 2, STATIONS.board.y + 29, 34);
+    drawIngredient(ctx, item, STATIONS.board.x + STATIONS.board.w / 2, STATIONS.board.y + 45, 34);
     const p = Math.min(1, kitchen.chopping.ms / CHOP_MS);
     ctx.fillStyle = '#e8dcc2';
-    roundRect(ctx, STATIONS.board.x + 20, STATIONS.board.y + 56, STATIONS.board.w - 40, 8, 4);
+    roundRect(ctx, STATIONS.board.x + 20, STATIONS.board.y + 70, STATIONS.board.w - 40, 8, 4);
     ctx.fill();
     ctx.fillStyle = '#69b455';
-    roundRect(ctx, STATIONS.board.x + 20, STATIONS.board.y + 56, (STATIONS.board.w - 40) * p, 8, 4);
+    roundRect(ctx, STATIONS.board.x + 20, STATIONS.board.y + 70, (STATIONS.board.w - 40) * p, 8, 4);
     ctx.fill();
   } else {
     ctx.fillStyle = '#8a5a33';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🔪', STATIONS.board.x + STATIONS.board.w / 2, STATIONS.board.y + 29);
+    ctx.fillText('🔪', STATIONS.board.x + STATIONS.board.w / 2, STATIONS.board.y + 45);
   }
   STATIONS.stoves.forEach((st, i) => {
     const slot = kitchen.stoves[i];
     drawStationBase(ctx, st, 'GRILL', slot.item ? COLORS.stoveHot : null);
     ctx.fillStyle = '#2b1d12';
-    ctx.beginPath(); ctx.ellipse(st.x + st.w / 2, st.y + 30, 34, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(st.x + st.w / 2, st.y + 46, 34, 12, 0, 0, Math.PI * 2); ctx.fill();
     if (slot.item) {
-      drawIngredient(ctx, slot.item, st.x + st.w / 2, st.y + 26, 40);
+      drawIngredient(ctx, slot.item, st.x + st.w / 2, st.y + 42, 40);
       const total = slot.item === 'pattyRaw' ? COOK_MS : BURN_MS;
       const p = Math.min(1, slot.ms / total);
       ctx.fillStyle = '#e8dcc2';
-      roundRect(ctx, st.x + 16, st.y + 56, st.w - 32, 8, 4);
+      roundRect(ctx, st.x + 16, st.y + 70, st.w - 32, 8, 4);
       ctx.fill();
       ctx.fillStyle = slot.item === 'pattyBurnt' ? '#2e211a' : slot.item === 'patty' ? '#4d9e57' : '#ff7a2f';
-      roundRect(ctx, st.x + 16, st.y + 56, (st.w - 32) * p, 8, 4);
+      roundRect(ctx, st.x + 16, st.y + 70, (st.w - 32) * p, 8, 4);
       ctx.fill();
-      if (slot.item === 'patty') text(ctx, 'READY!', st.x + st.w / 2, st.y + 76, 11, '#4d9e57', '800', 'center');
-      if (slot.item === 'pattyBurnt') text(ctx, 'BURNT!', st.x + st.w / 2, st.y + 76, 11, '#d94f3d', '800', 'center');
+      // A cooked patty gets a pulsing green ring: it reads as READY at a glance.
+      if (slot.item === 'patty') {
+        ctx.strokeStyle = `rgba(77,158,87,${0.6 + 0.4 * Math.sin(game.nowMs / 200)})`;
+        ctx.lineWidth = 3;
+        roundRect(ctx, st.x - 3, st.y - 3, st.w + 6, st.h + 6, 12);
+        ctx.stroke();
+      }
+      if (slot.item === 'pattyBurnt') {
+        ctx.strokeStyle = 'rgba(46,33,26,0.8)';
+        ctx.lineWidth = 3;
+        roundRect(ctx, st.x - 3, st.y - 3, st.w + 6, st.h + 6, 12);
+        ctx.stroke();
+      }
     } else {
       ctx.fillStyle = '#8d949c';
-      ctx.beginPath(); ctx.ellipse(st.x + st.w / 2, st.y + 30, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(st.x + st.w / 2, st.y + 46, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
     }
   });
   drawStationBase(ctx, STATIONS.assembly, 'BUILD YOUR DISH', '#f2b234');
   if (kitchen.assemblyPlate) {
-    drawPlate(ctx, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 34, kitchen.assemblyPlate.items, 40);
+    drawPlate(ctx, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 48, kitchen.assemblyPlate.items, 40);
     const match = board.matchTicket(kitchen.assemblyPlate.items);
-    if (match) text(ctx, `✓ ${match.recipe.name} — ready to serve!`, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 76, 11, '#2b7a2e', '800', 'center');
+    if (match) text(ctx, `✓ ${match.recipe.name} — ready to serve!`, STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 86, 11, '#2b7a2e', '800', 'center');
   } else {
     ctx.fillStyle = 'rgba(255,246,227,0.75)';
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('plate + ingredients', STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 34);
+    ctx.fillText('plate + ingredients', STATIONS.assembly.x + STATIONS.assembly.w / 2, STATIONS.assembly.y + 50);
   }
   drawStationBase(ctx, STATIONS.plates, 'PLATES');
-  drawPlate(ctx, STATIONS.plates.x + STATIONS.plates.w / 2, STATIONS.plates.y + 30, [], 30);
-  drawPlate(ctx, STATIONS.plates.x + STATIONS.plates.w / 2, STATIONS.plates.y + 36, [], 30);
+  drawPlate(ctx, STATIONS.plates.x + STATIONS.plates.w / 2, STATIONS.plates.y + 44, [], 30);
+  drawPlate(ctx, STATIONS.plates.x + STATIONS.plates.w / 2, STATIONS.plates.y + 50, [], 30);
   drawStationBase(ctx, STATIONS.window, 'SERVE →', '#d94f3d');
   ctx.fillStyle = '#f7ead0';
-  roundRect(ctx, STATIONS.window.x + 12, STATIONS.window.y + 10, STATIONS.window.w - 24, 34, 6);
+  roundRect(ctx, STATIONS.window.x + 12, STATIONS.window.y + 28, STATIONS.window.w - 24, 34, 6);
   ctx.fill();
   ctx.fillStyle = '#8a5a33';
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('🔔', STATIONS.window.x + STATIONS.window.w / 2, STATIONS.window.y + 27);
+  ctx.fillText('🔔', STATIONS.window.x + STATIONS.window.w / 2, STATIONS.window.y + 45);
   drawStationBase(ctx, STATIONS.trash, 'TRASH', '#5d4632');
   ctx.fillStyle = '#3a2a1c';
-  roundRect(ctx, STATIONS.trash.x + 22, STATIONS.trash.y + 10, STATIONS.trash.w - 44, 34, 6);
+  roundRect(ctx, STATIONS.trash.x + 22, STATIONS.trash.y + 28, STATIONS.trash.w - 44, 34, 6);
   ctx.fill();
 
   // Ingredients piled on the bottom counters.
@@ -400,11 +420,13 @@ export function render(ctx, game, input) {
     ctx.setLineDash([]);
     const label = stationHint(near.station, game);
     if (label) {
+      // Fixed bar above the message line: it never covers a station, the
+      // chef's carried item, or the plate being built.
       ctx.fillStyle = 'rgba(43,29,18,0.9)';
       const w = ctx.measureText(label).width + 90;
-      roundRect(ctx, chef.x - w / 2, chef.y - 96, w, 26, 13);
+      roundRect(ctx, VIEW_W / 2 - w / 2, VIEW_H - 78, w, 26, 13);
       ctx.fill();
-      text(ctx, label, chef.x, chef.y - 83, 13, '#fff6e3', '700', 'center');
+      text(ctx, label, VIEW_W / 2, VIEW_H - 65, 13, '#fff6e3', '700', 'center');
     }
   }
 

@@ -44,7 +44,6 @@ export function stageShot(game, name) {
     game.chef.x = 590; game.chef.y = 430; game.chef.dir = -1;
     game.chef.pickItem('lettuce');
     game.say('Burger almost there — add the lettuce!');
-    game.addPopup(600, 250, '+120', '#1d7a2e');
   } else if (name === 'chop') {
     // Mid-chop: knife work on the board, ticket board and timer in frame.
     game.elapsed = 20;
